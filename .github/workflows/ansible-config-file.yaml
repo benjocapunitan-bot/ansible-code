@@ -1,0 +1,49 @@
+on:
+  workflow_dispatch:
+
+jobs:
+  generate-ansible-cfg:
+    runs-on: [ self-hosted ]
+
+    steps:
+
+
+      - name: Generate ansible.cfg
+        run: |
+          sudo -u jayvee bash -c 'cat > /home/jayvee/ansible/ansible.cfg' << 'EOF'
+          [defaults]
+          inventory      = /home/jayvee/ansible/inventory.yaml
+          roles_path    = /home/jayvee/ansible/roles
+          host_key_checking = False
+          remote_user = jayvee
+          private_key_file = /home/jayvee/.ssh/id_rsa
+          log_path = /home/jayvee/ansible/ansible.log
+          forks = 5
+          gathering = smart
+          fact_caching = jsonfile
+          fact_caching_connection = /home/jayvee/ansible/facts_cache
+          
+
+          [privilege_escalation]
+          become = True
+          become_method = sudo
+          become_user = root
+          become_ask_pass = False
+
+          [ssh_connection]
+          ssh_args = -o ControlMaster=auto -o ControlPersist=60s -o ConnectTimeout=10
+          control_path = /home/jayvee/.ssh/id_rsa-%%r@%%h:%%p
+          EOF
+          
+
+      - name: Set proper permissions
+        run: |
+          sudo chown jayvee:jayvee /home/jayvee/ansible/ansible.cfg
+          sudo chmod 644 /home/jayvee/ansible/ansible.cfg
+
+      - name: Verify configuration
+        run: |
+          echo "Ansible configuration:"
+          sudo -u jayvee ls -la /home/jayvee/ansible/ansible.cfg
+          echo -e "\nContents:"
+          sudo -u jayvee cat /home/jayvee/ansible/ansible.cfg
