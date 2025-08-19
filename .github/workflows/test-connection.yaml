@@ -1,0 +1,13 @@
+on:
+  workflow_dispatch:
+
+jobs:
+  test-ansible-connections:
+    runs-on: [ self-hosted ]
+
+    steps:
+    
+      - name: Test connections with ping module
+        run: |
+          ansible all --list-hosts -i /home/jayvee/ansible/inventory.yaml
+          ansible all -m ping -i /home/jayvee/ansible/inventory.yaml
